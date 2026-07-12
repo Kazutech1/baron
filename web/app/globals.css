@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night-950: #04070c;
+  --color-night-900: #070d16;
+  --color-night-800: #0b1420;
+  --color-night-700: #12202f;
+  --color-edge: #1d3145;
+  --color-neon: #35e0ff;
+  --color-volt: #b8f34d;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-rajdhani);
+}
+
+body {
+  background-color: var(--color-night-950);
+  color: #dbe7f3;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background-image:
+    radial-gradient(1100px 500px at 80% -10%, rgba(53, 224, 255, 0.08), transparent 60%),
+    radial-gradient(900px 420px at 0% 10%, rgba(184, 243, 77, 0.05), transparent 55%);
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+}
+
+/* Angular corner-cut, like game menu buttons */
+.clip-btn {
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.clip-card {
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.panel {
+  background: linear-gradient(160deg, rgba(18, 32, 47, 0.75), rgba(7, 13, 22, 0.9));
+  border: 1px solid var(--color-edge);
+}
+
+.neon-text {
+  text-shadow: 0 0 18px rgba(53, 224, 255, 0.55);
+}
+
+.hud-label {
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+::selection {
+  background: rgba(53, 224, 255, 0.35);
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}

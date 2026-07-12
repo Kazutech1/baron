@@ -1,0 +1,106 @@
+{
+  "codm": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "Call of Duty®: Mobile",
+    "ogDescription": null
+  },
+  "mlbb": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "Mobile Legends: Bang Bang",
+    "ogDescription": null
+  },
+  "pubgm": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "PUBG MOBILE",
+    "ogDescription": null
+  },
+  "freefire": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "Free Fire: 9th Anniversary",
+    "ogDescription": null
+  },
+  "bloodstrike": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "Blood Strike x One-Punch Man",
+    "ogDescription": null
+  },
+  "fcmobile": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "EA SPORTS FC Soccer Mobile 26",
+    "ogDescription": null
+  },
+  "efootball": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "eFootball™",
+    "ogDescription": null
+  },
+  "deltaforce": {
+    "files": [
+      "icon.jpg",
+      "banner.jpg",
+      "shot-1.jpg",
+      "shot-2.jpg",
+      "shot-3.jpg",
+      "shot-4.jpg",
+      "shot-5.jpg"
+    ],
+    "ogTitle": "Delta Force",
+    "ogDescription": null
+  }
+}
