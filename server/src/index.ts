@@ -1,9 +1,8 @@
 import dns from "node:dns";
-import path from "node:path";
 import cors from "cors";
 import express from "express";
 import { assertConfig, config } from "./config.ts";
-import { connectDb } from "./db.ts";
+import { connectDb, images, importLocalImages } from "./db.ts";
 import { adminRouter } from "./routes/admin.ts";
 import { publicRouter } from "./routes/public.ts";
 import { scheduleSync } from "./sync.ts";
@@ -22,18 +21,26 @@ if (config.usePublicDns) {
 
 await connectDb();
 console.log("[db] connected");
+await importLocalImages();
 
 const app = express();
 app.use(cors({ origin: config.corsOrigin.split(",").map((s) => s.trim()) }));
 app.use(express.json({ limit: "1mb" }));
 
-// Real store artwork downloaded by sync.ts
-app.use(
-  "/games",
-  express.static(path.resolve(import.meta.dirname, "..", "public", "games"), {
-    maxAge: "1h",
-  })
-);
+// Real store artwork, synced into Mongo by sync.ts (survives ephemeral filesystems)
+app.get("/games/:gameId/:file", async (req, res) => {
+  const doc = await images().findOne({ _id: `/games/${req.params.gameId}/${req.params.file}` });
+  if (!doc) {
+    res.status(404).end();
+    return;
+  }
+  res.set({
+    "Content-Type": doc.contentType,
+    "Cache-Control": "public, max-age=86400",
+    "Last-Modified": doc.updatedAt.toUTCString(),
+  });
+  res.send(Buffer.from(doc.data.buffer));
+});
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use("/api", publicRouter);

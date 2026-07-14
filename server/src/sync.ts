@@ -4,12 +4,9 @@
 //  - Events:      the Play og:title carries live collab/season names
 //                 (e.g. "Blood Strike x One-Punch Man"); new titles become
 //                 draft events for admin review (or go live with autoPublishEvents).
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { events, games, getSetting, syncLog } from "./db.ts";
+import { events, games, getSetting, saveImage, syncLog } from "./db.ts";
 import type { GameDoc } from "./types.ts";
 
-const PUBLIC_DIR = path.resolve(import.meta.dirname, "..", "public");
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 
@@ -19,10 +16,12 @@ async function fetchText(url: string): Promise<string> {
   return res.text();
 }
 
-async function download(url: string, file: string): Promise<void> {
+/** Download an image and store it in Mongo under its public path (e.g. /games/codm/icon.jpg). */
+async function download(url: string, pathKey: string): Promise<void> {
   const res = await fetch(url, { headers: { "User-Agent": UA } });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
-  await writeFile(file, Buffer.from(await res.arrayBuffer()));
+  const contentType = res.headers.get("content-type")?.split(";")[0] || "image/jpeg";
+  await saveImage(pathKey, contentType, Buffer.from(await res.arrayBuffer()));
 }
 
 async function itunesIconUrl(game: GameDoc): Promise<string | null> {
@@ -108,14 +107,12 @@ export async function runSync(): Promise<SyncResult> {
 
   for (const game of list) {
     if (!game.playPackageId && !game.itunesTerm) continue;
-    const dir = path.join(PUBLIC_DIR, "games", game._id);
-    await mkdir(dir, { recursive: true });
     const update: Partial<GameDoc> = {};
 
     try {
       const iconUrl = await itunesIconUrl(game);
       if (iconUrl) {
-        await download(iconUrl, path.join(dir, "icon.jpg"));
+        await download(iconUrl, `/games/${game._id}/icon.jpg`);
         update.icon = `/games/${game._id}/icon.jpg`;
         result.imagesDownloaded += 1;
       }
@@ -131,7 +128,7 @@ export async function runSync(): Promise<SyncResult> {
         for (let i = 0; i < Math.min(play.shotUrls.length, 6); i++) {
           const name = `shot-${i + 1}.jpg`;
           try {
-            await download(play.shotUrls[i], path.join(dir, name));
+            await download(play.shotUrls[i], `/games/${game._id}/${name}`);
             shots.push(`/games/${game._id}/${name}`);
             result.imagesDownloaded += 1;
           } catch (err) {

@@ -1,2 +1,5 @@
 node_modules/
 .env
+
+# legacy local image cache — artwork now lives in MongoDB (images collection)
+public/games/
