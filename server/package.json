@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "node --watch --env-file=.env src/index.ts",
+    "build": "echo 'no build step - TypeScript runs natively on Node 24'",
     "start": "node --env-file-if-exists=.env src/index.ts",
     "typecheck": "tsc --noEmit"
   },
