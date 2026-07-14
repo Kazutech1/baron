@@ -56,7 +56,7 @@ export default function SuccessPage() {
           Reference <span className="font-mono font-bold text-neon">{order.ref}</span>
         </p>
         <p className="mt-1 text-sm text-slate-400">
-          Paid via {order.method}. A receipt was sent to {order.email || "your email"}.
+          Payment method: {order.method}. Confirmation goes to {order.email || "your email"}.
         </p>
 
         <ul className="mt-6 space-y-2 border-t border-edge pt-5 text-left text-sm text-slate-300">
@@ -75,8 +75,8 @@ export default function SuccessPage() {
         </ul>
 
         <p className="mt-6 text-xs leading-5 text-slate-500">
-          Delivery usually lands on your game ID within minutes. We&apos;ll ping your WhatsApp when
-          it&apos;s done. (Demo build — nothing was actually charged or delivered.)
+          Our team has been notified and will confirm payment with you on WhatsApp, then deliver
+          straight to your game ID — usually within minutes during support hours.
         </p>
 
         <Link

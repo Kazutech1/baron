@@ -107,7 +107,7 @@ export default function CartPage() {
               Checkout
             </Link>
             <p className="mt-3 text-center text-[11px] text-slate-500">
-              Demo checkout — no real payment is taken.
+              No online charge yet — payment is confirmed with you before delivery.
             </p>
           </aside>
         </div>

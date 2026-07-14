@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { SkinCard } from "@/components/cards";
-import { SKINS } from "@/lib/catalog";
+import { getCatalog } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Skins & bundles — Baron",
   description: "Legendary and Mythic skins, crates and bundles for Nigeria's top mobile games.",
 };
 
-export default function SkinsPage() {
+export default async function SkinsPage() {
+  const { skins } = await getCatalog();
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <p className="hud-label text-xs font-bold text-volt">Cosmetics</p>
@@ -19,7 +22,7 @@ export default function SkinsPage() {
         player ID.
       </p>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {SKINS.map((s) => (
+        {skins.map((s) => (
           <SkinCard key={s.id} skin={s} />
         ))}
       </div>

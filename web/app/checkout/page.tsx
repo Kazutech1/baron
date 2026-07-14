@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/CartProvider";
+import { API_URL } from "@/lib/api";
 import { formatNaira } from "@/lib/catalog";
 
 const PAYMENT_METHODS = [
@@ -21,6 +22,7 @@ export default function CheckoutPage() {
   const [method, setMethod] = useState("card");
   const [playerIds, setPlayerIds] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const games = useMemo(() => {
     const map = new Map<string, string>();
@@ -43,26 +45,47 @@ export default function CheckoutPage() {
     );
   }
 
-  function placeOrder(e: React.FormEvent) {
+  async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
     setProcessing(true);
-    const ref = `BAR-${Date.now().toString(36).toUpperCase()}${Math.floor(Math.random() * 90 + 10)}`;
-    const order = {
-      ref,
-      placedAt: new Date().toISOString(),
-      email,
-      phone,
-      method: PAYMENT_METHODS.find((m) => m.id === method)?.label ?? method,
-      playerIds,
-      items: items.map((i) => ({ name: i.name, gameName: i.gameName, qty: i.qty, priceNgn: i.priceNgn })),
-      total,
-    };
-    sessionStorage.setItem("baron-last-order", JSON.stringify(order));
-    // Simulate the payment round-trip
-    setTimeout(() => {
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email,
+          phone,
+          method: PAYMENT_METHODS.find((m) => m.id === method)?.label ?? method,
+          playerIds,
+          items: items.map((i) => ({ id: i.id, kind: i.kind, qty: i.qty })),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Order failed (${res.status})`);
+      const order = data.order;
+      sessionStorage.setItem(
+        "baron-last-order",
+        JSON.stringify({
+          ref: order.id,
+          placedAt: order.createdAt,
+          email: order.email,
+          method: order.method,
+          items: order.items.map((i: { name: string; gameName: string; qty: number; priceNgn: number }) => ({
+            name: i.name,
+            gameName: i.gameName,
+            qty: i.qty,
+            priceNgn: i.priceNgn,
+          })),
+          total: order.totalNgn,
+        })
+      );
       clear();
       router.push("/success");
-    }, 1400);
+    } catch (err) {
+      setError((err as Error).message);
+      setProcessing(false);
+    }
   }
 
   return (
@@ -177,10 +200,13 @@ export default function CheckoutPage() {
             disabled={processing}
             className="clip-btn hud-label mt-6 w-full bg-neon px-6 py-3 text-xs font-bold text-night-950 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
           >
-            {processing ? "Processing…" : `Pay ${formatNaira(total)}`}
+            {processing ? "Placing order…" : `Place order — ${formatNaira(total)}`}
           </button>
+          {error && (
+            <p className="mt-3 text-center text-xs font-semibold text-red-400">{error}</p>
+          )}
           <p className="mt-3 text-center text-[11px] text-slate-500">
-            Demo checkout — no real payment is taken.
+            No online charge yet — our team confirms payment with you before delivery.
           </p>
         </aside>
       </form>

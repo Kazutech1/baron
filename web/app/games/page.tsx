@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { GameCard } from "@/components/cards";
-import { GAMES } from "@/lib/catalog";
+import { getCatalog } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "All games — Baron",
   description: "Top up CODM, MLBB, PUBG Mobile, Free Fire, Blood Strike, FC Mobile, eFootball and Delta Force in Naira.",
 };
 
-export default function GamesPage() {
+export default async function GamesPage() {
+  const { games } = await getCatalog();
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <p className="hud-label text-xs font-bold text-volt">Catalogue</p>
@@ -16,7 +19,7 @@ export default function GamesPage() {
         Every title we stock tokens for. Pick a game to see packs, prices and current events.
       </p>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {GAMES.map((g) => (
+        {games.map((g) => (
           <GameCard key={g.id} game={g} />
         ))}
       </div>

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import HeroSlider from "@/components/HeroSlider";
 import { EventCard, GameCard, SkinCard } from "@/components/cards";
-import { EVENTS, GAMES, SKINS } from "@/lib/catalog";
+import { getCatalog } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
 
 const TRUST = [
   { title: "Instant delivery", body: "Tokens land on your game ID in minutes, 7 days a week." },
@@ -16,10 +18,11 @@ const STEPS = [
   { n: "03", title: "Drop your game ID", body: "We deliver straight to your account. Booyah." },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const { games, skins, events } = await getCatalog();
   return (
     <>
-      <HeroSlider slides={EVENTS.slice(0, 4)} />
+      {events.length > 0 && <HeroSlider slides={events.slice(0, 4)} />}
 
       {/* Trust strip */}
       <section className="border-y border-edge bg-night-900/60">
@@ -52,9 +55,12 @@ export default function Home() {
           </p>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {EVENTS.map((e) => (
+          {events.map((e) => (
             <EventCard key={e.id} event={e} />
           ))}
+          {events.length === 0 && (
+            <p className="text-sm text-slate-500">No live events right now — check back soon.</p>
+          )}
         </div>
       </section>
 
@@ -76,7 +82,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {GAMES.map((g) => (
+            {games.map((g) => (
               <GameCard key={g.id} game={g} />
             ))}
           </div>
@@ -100,7 +106,7 @@ export default function Home() {
           </Link>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {SKINS.slice(0, 4).map((s) => (
+          {skins.slice(0, 4).map((s) => (
             <SkinCard key={s.id} skin={s} />
           ))}
         </div>

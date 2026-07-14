@@ -39,8 +39,9 @@ export default function Footer() {
       </div>
       <div className="border-t border-edge/60 py-5">
         <p className="mx-auto max-w-6xl px-4 text-xs leading-5 text-slate-500 sm:px-6">
-          © 2026 Baron. Demo storefront — checkout is simulated and no real payments are processed.
-          All game names, artwork and trademarks belong to their respective publishers.
+          © 2026 Baron. Orders are fulfilled manually after payment is confirmed with you — no card
+          is charged online. All game names, artwork and trademarks belong to their respective
+          publishers.
         </p>
       </div>
     </footer>

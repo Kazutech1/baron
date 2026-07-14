@@ -4,28 +4,27 @@ import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/AddToCartButton";
 import Countdown from "@/components/Countdown";
 import { SkinCard } from "@/components/cards";
-import { EVENTS, GAMES, formatNaira, getGame, skinsFor } from "@/lib/catalog";
+import { getGameDetail } from "@/lib/api";
+import { formatNaira } from "@/lib/catalog";
 
-export function generateStaticParams() {
-  return GAMES.map((g) => ({ id: g.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const game = getGame((await params).id);
-  return { title: game ? `${game.name} ${game.currency} — Baron` : "Game — Baron" };
+  const detail = await getGameDetail((await params).id).catch(() => null);
+  return {
+    title: detail ? `${detail.game.name} ${detail.game.currency} — Baron` : "Game — Baron",
+  };
 }
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const game = getGame(id);
-  if (!game) notFound();
-
-  const skins = skinsFor(game.id);
-  const events = EVENTS.filter((e) => e.gameId === game.id);
+  const detail = await getGameDetail(id);
+  if (!detail) notFound();
+  const { game, skins, events } = detail;
 
   return (
     <>

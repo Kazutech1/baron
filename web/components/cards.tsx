@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Game, GameEvent, Skin } from "@/lib/catalog";
-import { formatNaira, getGame } from "@/lib/catalog";
+import { formatNaira } from "@/lib/catalog";
 import Countdown from "./Countdown";
 import AddToCartButton from "./AddToCartButton";
 
 export function GameCard({ game }: { game: Game }) {
-  const from = Math.min(...game.packs.map((p) => p.priceNgn));
+  const from = game.packs.length > 0 ? Math.min(...game.packs.map((p) => p.priceNgn)) : null;
   return (
     <Link
       href={`/games/${game.id}`}
@@ -33,7 +33,12 @@ export function GameCard({ game }: { game: Game }) {
         <div className="min-w-0">
           <p className="truncate font-display text-lg font-bold text-white">{game.name}</p>
           <p className="text-xs text-slate-400">
-            {game.currency} · from <span className="font-semibold text-volt">{formatNaira(from)}</span>
+            {game.currency}
+            {from !== null && (
+              <>
+                {" "}· from <span className="font-semibold text-volt">{formatNaira(from)}</span>
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -42,7 +47,6 @@ export function GameCard({ game }: { game: Game }) {
 }
 
 export function EventCard({ event }: { event: GameEvent }) {
-  const game = getGame(event.gameId);
   return (
     <div className="clip-card panel group overflow-hidden">
       <div className="relative h-44 overflow-hidden">
@@ -68,14 +72,12 @@ export function EventCard({ event }: { event: GameEvent }) {
             <p className="hud-label text-[10px] text-slate-500">Ends in</p>
             <Countdown endsAt={event.endsAt} />
           </div>
-          {game && (
-            <Link
-              href={`/games/${game.id}`}
-              className="clip-btn hud-label border border-neon/60 bg-neon/10 px-3 py-2 text-[10px] font-bold text-neon hover:bg-neon/20"
-            >
-              Top up {game.currency}
-            </Link>
-          )}
+          <Link
+            href={`/games/${event.gameId}`}
+            className="clip-btn hud-label border border-neon/60 bg-neon/10 px-3 py-2 text-[10px] font-bold text-neon hover:bg-neon/20"
+          >
+            Top up {event.gameCurrency || "now"}
+          </Link>
         </div>
       </div>
     </div>
@@ -89,7 +91,6 @@ const RARITY_STYLES: Record<Skin["rarity"], string> = {
 };
 
 export function SkinCard({ skin }: { skin: Skin }) {
-  const game = getGame(skin.gameId);
   return (
     <div className="clip-card panel group overflow-hidden">
       <div className="relative h-40 overflow-hidden">
@@ -109,7 +110,7 @@ export function SkinCard({ skin }: { skin: Skin }) {
       </div>
       <div className="space-y-2 p-4">
         <p className="truncate font-display text-base font-bold text-white">{skin.name}</p>
-        <p className="text-xs text-slate-400">{game?.name}</p>
+        <p className="text-xs text-slate-400">{skin.gameName}</p>
         <div className="flex items-center justify-between pt-1">
           <span className="font-display text-lg font-bold text-volt">{formatNaira(skin.priceNgn)}</span>
           <AddToCartButton
@@ -117,7 +118,7 @@ export function SkinCard({ skin }: { skin: Skin }) {
               id: skin.id,
               kind: "skin",
               gameId: skin.gameId,
-              gameName: game?.name ?? skin.gameId,
+              gameName: skin.gameName ?? skin.gameId,
               name: skin.name,
               priceNgn: skin.priceNgn,
               image: skin.image,
