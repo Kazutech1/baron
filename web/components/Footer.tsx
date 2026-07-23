@@ -25,7 +25,6 @@ export default function Footer() {
             <li>Cards (Paystack)</li>
             <li>Bank transfer</li>
             <li>USSD</li>
-            <li>OPay &amp; PalmPay</li>
           </ul>
         </div>
         <div>

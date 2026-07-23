@@ -1,24 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import { API_URL, initializePayment } from "@/lib/api";
 import { formatNaira } from "@/lib/catalog";
 
-const PAYMENT_METHODS = [
-  { id: "paystack", label: "Pay online", hint: "Card, bank transfer or USSD — secured by Paystack" },
-  { id: "wallet", label: "OPay / PalmPay", hint: "Pay from your wallet — confirmed on WhatsApp" },
-];
+/** Games that need a zone/server id alongside the player id (e.g. Mobile Legends). */
+const SERVER_ID_GAMES = new Set(["mlbb"]);
 
 export default function CheckoutPage() {
   const { items, total, clear } = useCart();
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [method, setMethod] = useState("paystack");
   const [playerIds, setPlayerIds] = useState<Record<string, string>>({});
+  const [serverIds, setServerIds] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,46 +44,31 @@ export default function CheckoutPage() {
     setProcessing(true);
     setError(null);
     try {
+      const finalPlayerIds = { ...playerIds };
+      for (const gameId of SERVER_ID_GAMES) {
+        if (finalPlayerIds[gameId] && serverIds[gameId]) {
+          finalPlayerIds[gameId] = `${finalPlayerIds[gameId]} (${serverIds[gameId]})`;
+        }
+      }
+
       const res = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           email,
           phone,
-          method: PAYMENT_METHODS.find((m) => m.id === method)?.label ?? method,
-          playerIds,
+          method: "Pay online (Paystack)",
+          playerIds: finalPlayerIds,
           items: items.map((i) => ({ id: i.id, kind: i.kind, qty: i.qty })),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Order failed (${res.status})`);
       const order = data.order;
-      sessionStorage.setItem(
-        "baron-last-order",
-        JSON.stringify({
-          ref: order.id,
-          placedAt: order.createdAt,
-          email: order.email,
-          method: order.method,
-          items: order.items.map((i: { name: string; gameName: string; qty: number; priceNgn: number }) => ({
-            name: i.name,
-            gameName: i.gameName,
-            qty: i.qty,
-            priceNgn: i.priceNgn,
-          })),
-          total: order.totalNgn,
-        })
-      );
 
-      if (method === "paystack") {
-        const { authorizationUrl } = await initializePayment(order.id);
-        clear();
-        window.location.href = authorizationUrl;
-        return;
-      }
-
+      const { authorizationUrl } = await initializePayment(order.id);
       clear();
-      router.push("/success");
+      window.location.href = authorizationUrl;
     } catch (err) {
       setError((err as Error).message);
       setProcessing(false);
@@ -138,49 +119,42 @@ export default function CheckoutPage() {
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {games.map(([gameId, gameName]) => (
-                <label key={gameId} className="block text-sm">
-                  <span className="text-slate-300">{gameName} player ID</span>
-                  <input
-                    type="text"
-                    required
-                    value={playerIds[gameId] ?? ""}
-                    onChange={(e) => setPlayerIds((p) => ({ ...p, [gameId]: e.target.value }))}
-                    placeholder="e.g. 5524 198 7723"
-                    className="mt-1.5 w-full border border-edge bg-night-950 px-3 py-2.5 font-mono text-white outline-none transition focus:border-neon"
-                  />
-                </label>
+                <div key={gameId} className={SERVER_ID_GAMES.has(gameId) ? "grid gap-4 sm:col-span-2 sm:grid-cols-2" : "contents"}>
+                  <label className="block text-sm">
+                    <span className="text-slate-300">{gameName} player ID</span>
+                    <input
+                      type="text"
+                      required
+                      value={playerIds[gameId] ?? ""}
+                      onChange={(e) => setPlayerIds((p) => ({ ...p, [gameId]: e.target.value }))}
+                      placeholder="e.g. 5524 198 7723"
+                      className="mt-1.5 w-full border border-edge bg-night-950 px-3 py-2.5 font-mono text-white outline-none transition focus:border-neon"
+                    />
+                  </label>
+                  {SERVER_ID_GAMES.has(gameId) && (
+                    <label className="block text-sm">
+                      <span className="text-slate-300">{gameName} server ID</span>
+                      <input
+                        type="text"
+                        required
+                        value={serverIds[gameId] ?? ""}
+                        onChange={(e) => setServerIds((s) => ({ ...s, [gameId]: e.target.value }))}
+                        placeholder="e.g. 1234"
+                        className="mt-1.5 w-full border border-edge bg-night-950 px-3 py-2.5 font-mono text-white outline-none transition focus:border-neon"
+                      />
+                    </label>
+                  )}
+                </div>
               ))}
             </div>
           </section>
 
           {/* Payment */}
           <section className="clip-card panel p-6">
-            <h2 className="hud-label text-xs font-bold text-neon">3 · Payment method</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {PAYMENT_METHODS.map((m) => (
-                <label
-                  key={m.id}
-                  className={`clip-btn flex cursor-pointer items-center gap-3 border px-4 py-3 transition ${
-                    method === m.id
-                      ? "border-neon bg-neon/10"
-                      : "border-edge hover:border-slate-500"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value={m.id}
-                    checked={method === m.id}
-                    onChange={() => setMethod(m.id)}
-                    className="accent-[#35e0ff]"
-                  />
-                  <span>
-                    <span className="block text-sm font-semibold text-white">{m.label}</span>
-                    <span className="block text-xs text-slate-500">{m.hint}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
+            <h2 className="hud-label text-xs font-bold text-neon">3 · Payment</h2>
+            <p className="mt-3 text-sm text-slate-300">
+              You&apos;ll be redirected to Paystack&apos;s secure checkout — pay by card, bank transfer, or USSD.
+            </p>
           </section>
         </div>
 
@@ -206,19 +180,13 @@ export default function CheckoutPage() {
             disabled={processing}
             className="clip-btn hud-label mt-6 w-full bg-neon px-6 py-3 text-xs font-bold text-night-950 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
           >
-            {processing
-              ? method === "paystack"
-                ? "Redirecting to Paystack…"
-                : "Placing order…"
-              : `Place order — ${formatNaira(total)}`}
+            {processing ? "Redirecting to Paystack…" : `Place order — ${formatNaira(total)}`}
           </button>
           {error && (
             <p className="mt-3 text-center text-xs font-semibold text-red-400">{error}</p>
           )}
           <p className="mt-3 text-center text-[11px] text-slate-500">
-            {method === "paystack"
-              ? "You'll be redirected to Paystack's secure checkout to pay."
-              : "No online charge yet — our team confirms payment with you before delivery."}
+            You&apos;ll be redirected to Paystack&apos;s secure checkout to pay.
           </p>
         </aside>
       </form>

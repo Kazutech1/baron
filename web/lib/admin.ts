@@ -103,16 +103,40 @@ export type AdminOrder = {
   items: { itemId: string; kind: string; gameId: string; gameName: string; name: string; priceNgn: number; qty: number }[];
 };
 
+/** WhatsApp supports a light markdown subset: *bold*, _italic_, and real line breaks. */
+function whatsAppMessage(order: Pick<AdminOrder, "id" | "totalNgn" | "status" | "paymentStatus">): string {
+  const ref = order.id;
+  const total = formatNaira(order.totalNgn);
+
+  if (order.status === "delivered") {
+    return [
+      "✅ *Delivered!*",
+      "",
+      `Hey! Your Baron order *${ref}* has landed — sent straight to your game ID.`,
+      "",
+      "Enjoy! 🎮🔥",
+    ].join("\n");
+  }
+  if (order.paymentStatus === "paid") {
+    return [
+      "💰 *Payment received!*",
+      "",
+      `Thanks for order *${ref}* — we've confirmed your payment of *${total}*.`,
+      "",
+      "Getting it ready now, delivery is on the way 🚀",
+    ].join("\n");
+  }
+  return ["👋 Hey, this is *Baron*!", "", `Reaching out about your order *${ref}* (*${total}*).`].join("\n");
+}
+
 /** Click-to-chat link, pre-filled with a status message — free, no WhatsApp API needed. */
-export function whatsAppLink(order: Pick<AdminOrder, "id" | "phone" | "totalNgn" | "status">): string | null {
+export function whatsAppLink(
+  order: Pick<AdminOrder, "id" | "phone" | "totalNgn" | "status" | "paymentStatus">
+): string | null {
   const digits = order.phone.replace(/\D/g, "");
   if (!digits) return null;
   const phone = digits.startsWith("0") ? `234${digits.slice(1)}` : digits;
-  const text =
-    order.status === "delivered"
-      ? `Hi! Your Baron order ${order.id} has been delivered ✅ Enjoy!`
-      : `Hi! This is Baron regarding your order ${order.id} (${formatNaira(order.totalNgn)}).`;
-  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(whatsAppMessage(order))}`;
 }
 
 export type Overview = {
