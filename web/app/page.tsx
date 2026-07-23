@@ -22,6 +22,8 @@ export default async function Home() {
   const { games, skins, events } = await getCatalog();
   return (
     <>
+      {/* Real page heading for SEO/accessibility — HeroSlider's rotating headline is promotional, not this. */}
+      <h1 className="sr-only">Loadax — Instant Game Top-Ups for Nigeria</h1>
       {events.length > 0 && <HeroSlider slides={events.slice(0, 4)} />}
 
       {/* Trust strip */}

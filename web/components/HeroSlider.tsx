@@ -40,9 +40,9 @@ export default function HeroSlider({ slides }: { slides: GameEvent[] }) {
         <p className="hud-label text-xs font-bold text-volt">
           Live event · ends soon
         </p>
-        <h1 className="font-display mt-3 max-w-xl text-3xl font-bold uppercase leading-tight text-white sm:text-5xl lg:text-6xl">
+        <p className="font-display mt-3 max-w-xl text-3xl font-bold uppercase leading-tight text-white sm:text-5xl lg:text-6xl">
           {slides[index].title}
-        </h1>
+        </p>
         <p className="mt-4 max-w-lg text-sm leading-6 text-slate-300 sm:text-base">
           {slides[index].blurb}
         </p>

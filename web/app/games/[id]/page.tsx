@@ -14,9 +14,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const detail = await getGameDetail((await params).id).catch(() => null);
+  const { id } = await params;
+  const detail = await getGameDetail(id).catch(() => null);
+  if (!detail) return { title: "Game" };
+  const { game } = detail;
+  const description = `Buy ${game.name} ${game.currency} instantly in Nigeria. Pay in Naira, delivered straight to your player ID — usually within minutes.`;
   return {
-    title: detail ? `${detail.game.name} ${detail.game.currency} — Loadax` : "Game — Loadax",
+    title: `${game.name} ${game.currency}`,
+    description,
+    alternates: { canonical: `/games/${id}` },
+    openGraph: { title: `${game.name} ${game.currency} — Loadax`, description, images: [game.card] },
   };
 }
 
@@ -26,8 +33,36 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   if (!detail) notFound();
   const { game, skins, events } = detail;
 
+  // The public API only ever returns active packs, so no extra filtering is needed here.
+  const packPrices = game.packs.map((p) => p.priceNgn);
+  const productJsonLd =
+    packPrices.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: `${game.name} ${game.currency}`,
+          description: game.tagline,
+          image: game.icon,
+          brand: { "@type": "Brand", name: "Loadax" },
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "NGN",
+            lowPrice: Math.min(...packPrices),
+            highPrice: Math.max(...packPrices),
+            offerCount: packPrices.length,
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : null;
+
   return (
     <>
+      {productJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd).replace(/</g, "\\u003c") }}
+        />
+      )}
       {/* Banner */}
       <div className="relative h-64 overflow-hidden sm:h-80">
         <Image
