@@ -1,8 +1,8 @@
-// Client-side helper for the admin dashboard (talks to the Baron API with a bearer token).
+// Client-side helper for the admin dashboard (talks to the Loadax API with a bearer token).
 import { API_URL } from "./api";
 import { formatNaira } from "./catalog";
 
-const TOKEN_KEY = "baron-admin-token";
+const TOKEN_KEY = "loadax-admin-token";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -112,7 +112,7 @@ function whatsAppMessage(order: Pick<AdminOrder, "id" | "totalNgn" | "status" | 
     return [
       "✅ *Delivered!*",
       "",
-      `Hey! Your Baron order *${ref}* has landed — sent straight to your game ID.`,
+      `Hey! Your Loadax order *${ref}* has landed — sent straight to your game ID.`,
       "",
       "Enjoy! 🎮🔥",
     ].join("\n");
@@ -126,7 +126,7 @@ function whatsAppMessage(order: Pick<AdminOrder, "id" | "totalNgn" | "status" | 
       "Getting it ready now, delivery is on the way 🚀",
     ].join("\n");
   }
-  return ["👋 Hey, this is *Baron*!", "", `Reaching out about your order *${ref}* (*${total}*).`].join("\n");
+  return ["👋 Hey, this is *Loadax*!", "", `Reaching out about your order *${ref}* (*${total}*).`].join("\n");
 }
 
 /** Click-to-chat link, pre-filled with a status message — free, no WhatsApp API needed. */

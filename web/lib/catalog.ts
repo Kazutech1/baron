@@ -1,4 +1,4 @@
-// Shared storefront types (data comes from the Baron API — see lib/api.ts).
+// Shared storefront types (data comes from the Loadax API — see lib/api.ts).
 
 export type Pack = {
   id: string;

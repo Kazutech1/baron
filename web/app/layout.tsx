@@ -17,7 +17,7 @@ const rajdhani = Rajdhani({
 });
 
 export const metadata: Metadata = {
-  title: "Baron — Game Top-Ups for Nigeria",
+  title: "Loadax — Game Top-Ups for Nigeria",
   description:
     "Instant CODM CP, MLBB Diamonds, PUBG UC, Free Fire Diamonds and more. Pay in Naira, delivered to your game ID in minutes.",
 };

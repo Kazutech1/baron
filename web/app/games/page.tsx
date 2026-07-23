@@ -5,7 +5,7 @@ import { getCatalog } from "@/lib/api";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "All games — Baron",
+  title: "All games — Loadax",
   description: "Top up CODM, MLBB, PUBG Mobile, Free Fire, Blood Strike, FC Mobile, eFootball and Delta Force in Naira.",
 };
 

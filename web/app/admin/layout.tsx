@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="mx-auto flex max-w-6xl gap-8 px-4 py-10 sm:px-6">
       <aside className="w-40 shrink-0">
-        <p className="hud-label text-xs font-bold text-volt">Baron admin</p>
+        <p className="hud-label text-xs font-bold text-volt">Loadax admin</p>
         <nav className="mt-4 flex flex-col gap-1">
           {NAV.map((n) => (
             <Link

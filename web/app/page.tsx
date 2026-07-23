@@ -115,7 +115,7 @@ export default async function Home() {
       {/* How it works */}
       <section className="border-t border-edge bg-night-900/40">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <h2 className="font-display text-3xl font-bold uppercase text-white">How Baron works</h2>
+          <h2 className="font-display text-3xl font-bold uppercase text-white">How Loadax works</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-3">
             {STEPS.map((s) => (
               <div key={s.n} className="clip-card panel p-6">
@@ -131,7 +131,7 @@ export default async function Home() {
                 Ready when you are, chief.
               </p>
               <p className="mt-1 text-sm text-slate-300">
-                Join thousands of Nigerian gamers topping up with Baron.
+                Join thousands of Nigerian gamers topping up with Loadax.
               </p>
             </div>
             <Link

@@ -5,7 +5,7 @@ import { getCatalog } from "@/lib/api";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Skins & bundles — Baron",
+  title: "Skins & bundles — Loadax",
   description: "Legendary and Mythic skins, crates and bundles for Nigeria's top mobile games.",
 };
 

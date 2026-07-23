@@ -10,7 +10,7 @@ const LINKS = [
   { href: "/skins", label: "Skins" },
 ];
 
-export function BaronMark({ className = "h-7 w-7" }: { className?: string }) {
+export function LoadaxMark({ className = "h-7 w-7" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden>
       <path
@@ -33,9 +33,9 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-edge bg-night-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2 text-neon sm:gap-2.5">
-          <BaronMark className="h-6 w-6 sm:h-7 sm:w-7" />
+          <LoadaxMark className="h-6 w-6 sm:h-7 sm:w-7" />
           <span className="font-display text-lg font-bold tracking-[0.2em] text-white sm:text-2xl sm:tracking-[0.3em]">
-            BARON
+            LOADAX
           </span>
         </Link>
 

@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
     <div className="mx-auto max-w-sm px-4 py-24">
       <form onSubmit={login} className="clip-card panel p-8">
         <p className="hud-label text-xs font-bold text-volt">Restricted area</p>
-        <h1 className="font-display mt-1 text-2xl font-bold uppercase text-white">Baron admin</h1>
+        <h1 className="font-display mt-1 text-2xl font-bold uppercase text-white">Loadax admin</h1>
         <label className="mt-6 block">
           <span className={cls.label}>Password</span>
           <input

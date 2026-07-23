@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      // Deployed Baron API (Render)
+      // Deployed Loadax API (Render)
       { protocol: "https", hostname: "*.onrender.com" },
       // Local dev API
       { protocol: "http", hostname: "localhost", port: "4000" },

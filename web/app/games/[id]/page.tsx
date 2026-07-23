@@ -16,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const detail = await getGameDetail((await params).id).catch(() => null);
   return {
-    title: detail ? `${detail.game.name} ${detail.game.currency} — Baron` : "Game — Baron",
+    title: detail ? `${detail.game.name} ${detail.game.currency} — Loadax` : "Game — Loadax",
   };
 }
 

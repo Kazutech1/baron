@@ -24,7 +24,7 @@ type CartApi = {
 };
 
 const CartContext = createContext<CartApi | null>(null);
-const STORAGE_KEY = "baron-cart-v1";
+const STORAGE_KEY = "loadax-cart-v1";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);

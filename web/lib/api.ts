@@ -1,4 +1,4 @@
-// Storefront data access — everything comes from the Baron API server.
+// Storefront data access — everything comes from the Loadax API server.
 import type { Game, GameEvent, Skin } from "./catalog";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
