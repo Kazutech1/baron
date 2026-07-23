@@ -159,6 +159,9 @@ export async function createOrder(input: {
     playerIds: input.playerIds,
     totalNgn: lines.reduce((n, l) => n + l.priceNgn * l.qty, 0),
     status: "pending",
+    paymentStatus: "unpaid",
+    paymentRef: null,
+    paidAt: null,
     telegramMsgId: null,
     createdAt: new Date(),
     updatedAt: null,
@@ -170,6 +173,34 @@ export async function createOrder(input: {
 
 export async function setOrderStatus(ref: string, status: OrderStatus): Promise<OrderDoc | null> {
   await orders().updateOne({ _id: ref }, { $set: { status, updatedAt: new Date() } });
+  return orders().findOne({ _id: ref });
+}
+
+export async function setOrderPaymentRef(ref: string, paymentRef: string): Promise<void> {
+  await orders().updateOne({ _id: ref }, { $set: { paymentRef } });
+}
+
+/**
+ * Idempotent: the `paymentStatus: { $ne: "paid" }` guard means a late/duplicate "failed"
+ * verify can never downgrade an order the webhook already marked paid, and marking paid
+ * twice (webhook + return-page verify racing) is a no-op the second time.
+ */
+export async function updatePaymentStatus(
+  ref: string,
+  status: "paid" | "failed",
+  paymentRef: string
+): Promise<OrderDoc | null> {
+  await orders().updateOne(
+    { _id: ref, paymentStatus: { $ne: "paid" } },
+    {
+      $set: {
+        paymentStatus: status,
+        paymentRef,
+        updatedAt: new Date(),
+        ...(status === "paid" ? { paidAt: new Date() } : {}),
+      },
+    }
+  );
   return orders().findOne({ _id: ref });
 }
 

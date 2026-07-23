@@ -52,6 +52,8 @@ export type EventDoc = {
 
 export type OrderStatus = "pending" | "delivered" | "cancelled";
 
+export type PaymentStatus = "unpaid" | "paid" | "failed";
+
 export type OrderItem = {
   itemId: string;
   kind: "pack" | "skin";
@@ -70,6 +72,9 @@ export type OrderDoc = {
   playerIds: Record<string, string>;
   totalNgn: number;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentRef: string | null;
+  paidAt: Date | null;
   telegramMsgId: number | null;
   createdAt: Date;
   updatedAt: Date | null;

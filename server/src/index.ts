@@ -5,6 +5,7 @@ import { assertConfig, config } from "./config.ts";
 import { connectDb, images, importLocalImages } from "./db.ts";
 import { adminRouter } from "./routes/admin.ts";
 import { publicRouter } from "./routes/public.ts";
+import { paystackWebhook } from "./routes/webhook.ts";
 import { scheduleSync } from "./sync.ts";
 import { startBot } from "./telegram.ts";
 
@@ -25,6 +26,10 @@ await importLocalImages();
 
 const app = express();
 app.use(cors({ origin: config.corsOrigin.split(",").map((s) => s.trim()) }));
+
+// Raw body required for HMAC signature verification — must come before express.json().
+app.post("/api/paystack/webhook", express.raw({ type: "application/json" }), paystackWebhook);
+
 app.use(express.json({ limit: "1mb" }));
 
 // Real store artwork, synced into Mongo by sync.ts (survives ephemeral filesystems)

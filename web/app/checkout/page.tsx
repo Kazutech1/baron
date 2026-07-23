@@ -4,14 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/CartProvider";
-import { API_URL } from "@/lib/api";
+import { API_URL, initializePayment } from "@/lib/api";
 import { formatNaira } from "@/lib/catalog";
 
 const PAYMENT_METHODS = [
-  { id: "card", label: "Card (Paystack)", hint: "Visa, Mastercard, Verve" },
-  { id: "transfer", label: "Bank transfer", hint: "Instant confirmation" },
-  { id: "ussd", label: "USSD", hint: "*Any bank* — no data needed" },
-  { id: "wallet", label: "OPay / PalmPay", hint: "Pay from your wallet" },
+  { id: "paystack", label: "Pay online", hint: "Card, bank transfer or USSD — secured by Paystack" },
+  { id: "wallet", label: "OPay / PalmPay", hint: "Pay from your wallet — confirmed on WhatsApp" },
 ];
 
 export default function CheckoutPage() {
@@ -19,7 +17,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [method, setMethod] = useState("card");
+  const [method, setMethod] = useState("paystack");
   const [playerIds, setPlayerIds] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +78,14 @@ export default function CheckoutPage() {
           total: order.totalNgn,
         })
       );
+
+      if (method === "paystack") {
+        const { authorizationUrl } = await initializePayment(order.id);
+        clear();
+        window.location.href = authorizationUrl;
+        return;
+      }
+
       clear();
       router.push("/success");
     } catch (err) {
@@ -200,13 +206,19 @@ export default function CheckoutPage() {
             disabled={processing}
             className="clip-btn hud-label mt-6 w-full bg-neon px-6 py-3 text-xs font-bold text-night-950 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
           >
-            {processing ? "Placing order…" : `Place order — ${formatNaira(total)}`}
+            {processing
+              ? method === "paystack"
+                ? "Redirecting to Paystack…"
+                : "Placing order…"
+              : `Place order — ${formatNaira(total)}`}
           </button>
           {error && (
             <p className="mt-3 text-center text-xs font-semibold text-red-400">{error}</p>
           )}
           <p className="mt-3 text-center text-[11px] text-slate-500">
-            No online charge yet — our team confirms payment with you before delivery.
+            {method === "paystack"
+              ? "You'll be redirected to Paystack's secure checkout to pay."
+              : "No online charge yet — our team confirms payment with you before delivery."}
           </p>
         </aside>
       </form>

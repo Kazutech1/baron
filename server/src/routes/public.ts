@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { events, games, orders, skins, createOrder } from "../db.ts";
-import { notifyNewOrder } from "../telegram.ts";
+import { config } from "../config.ts";
+import { events, games, orders, skins, createOrder, setOrderPaymentRef, updatePaymentStatus } from "../db.ts";
+import { initializeTransaction, verifyTransaction } from "../paystack.ts";
+import { notifyNewOrder, refreshOrderMessage } from "../telegram.ts";
 import { pub } from "../types.ts";
 
 export const publicRouter = Router();
@@ -92,6 +94,75 @@ publicRouter.get("/orders/:ref", async (req, res) => {
     res.status(404).json({ error: "Order not found" });
     return;
   }
-  // public lookup: expose delivery status without personal details
-  res.json({ ref: order._id, status: order.status, totalNgn: order.totalNgn, createdAt: order.createdAt });
+  // public lookup: expose delivery/payment status without personal details
+  res.json({
+    ref: order._id,
+    status: order.status,
+    paymentStatus: order.paymentStatus,
+    totalNgn: order.totalNgn,
+    createdAt: order.createdAt,
+  });
+});
+
+/** Start a Paystack Standard checkout for an existing order — returns the hosted page URL to redirect to. */
+publicRouter.post("/orders/:ref/pay", async (req, res) => {
+  const order = await orders().findOne({ _id: req.params.ref });
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  if (order.paymentStatus === "paid") {
+    res.status(400).json({ error: "Order already paid" });
+    return;
+  }
+  // fresh reference per attempt so a retried/abandoned checkout never collides with Paystack
+  const reference = `${order._id}-${Date.now().toString(36)}`;
+  try {
+    const init = await initializeTransaction({
+      email: order.email,
+      amountNgn: order.totalNgn, // server-side total — never trust a client-supplied amount
+      reference,
+      callbackUrl: `${config.webUrl}/success?ref=${encodeURIComponent(order._id)}`,
+      metadata: { orderRef: order._id },
+    });
+    await setOrderPaymentRef(order._id, reference);
+    res.json({ authorizationUrl: init.data.authorization_url });
+  } catch (err) {
+    res.status(502).json({ error: (err as Error).message });
+  }
+});
+
+/**
+ * Confirm payment for an order — called by the storefront right after Paystack redirects
+ * the customer back. Primary confirmation path; the webhook is the async backup for the
+ * case where the customer closes the tab before the redirect completes.
+ */
+publicRouter.get("/orders/:ref/verify", async (req, res) => {
+  const order = await orders().findOne({ _id: req.params.ref });
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  if (order.paymentStatus === "paid" || !order.paymentRef) {
+    res.json({ paymentStatus: order.paymentStatus });
+    return;
+  }
+  try {
+    const result = await verifyTransaction(order.paymentRef);
+    const paidOk = result.data.status === "success" && result.data.amount === Math.round(order.totalNgn * 100);
+    if (paidOk) {
+      const updated = await updatePaymentStatus(order._id, "paid", order.paymentRef);
+      if (updated) refreshOrderMessage(updated).catch(() => {});
+      res.json({ paymentStatus: "paid" });
+      return;
+    }
+    if (result.data.status === "failed" || result.data.status === "abandoned") {
+      await updatePaymentStatus(order._id, "failed", order.paymentRef);
+      res.json({ paymentStatus: "failed" });
+      return;
+    }
+    res.json({ paymentStatus: "unpaid" });
+  } catch (err) {
+    res.status(502).json({ error: (err as Error).message });
+  }
 });

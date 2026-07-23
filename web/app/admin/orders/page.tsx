@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { StatusBadge } from "@/components/admin-ui";
-import { adminFetch, cls, type AdminOrder } from "@/lib/admin";
+import { adminFetch, cls, whatsAppLink, type AdminOrder } from "@/lib/admin";
 import { formatNaira } from "@/lib/catalog";
 
 const FILTERS = ["all", "pending", "delivered", "cancelled"] as const;
@@ -63,6 +63,7 @@ export default function AdminOrdersPage() {
               <div className="flex items-center gap-3">
                 <span className="font-mono text-sm font-bold text-neon">{o.id}</span>
                 <StatusBadge status={o.status} />
+                <StatusBadge status={o.paymentStatus} />
                 <span className="text-xs text-slate-500">{new Date(o.createdAt).toLocaleString()}</span>
               </div>
               <span className="font-display text-lg font-bold text-white">{formatNaira(o.totalNgn)}</span>
@@ -91,6 +92,11 @@ export default function AdminOrdersPage() {
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
+              {whatsAppLink(o) && (
+                <a href={whatsAppLink(o)!} target="_blank" rel="noopener noreferrer" className={cls.btn}>
+                  💬 WhatsApp customer
+                </a>
+              )}
               {o.status !== "delivered" && (
                 <button
                   disabled={busyRef === o.id}

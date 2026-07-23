@@ -31,6 +31,21 @@ export async function getCatalog(): Promise<Catalog> {
   };
 }
 
+export type PaymentStatus = "unpaid" | "paid" | "failed";
+
+/** Starts a Paystack Standard checkout for an existing order; returns the hosted page to redirect to. */
+export async function initializePayment(ref: string): Promise<{ authorizationUrl: string }> {
+  const res = await fetch(`${API_URL}/api/orders/${encodeURIComponent(ref)}/pay`, { method: "POST" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Payment init failed (${res.status})`);
+  return data;
+}
+
+/** Confirms payment status server-side after Paystack redirects the customer back. */
+export function verifyPayment(ref: string): Promise<{ paymentStatus: PaymentStatus }> {
+  return getJson(`/api/orders/${encodeURIComponent(ref)}/verify`);
+}
+
 export type GameDetail = { game: Game; skins: Skin[]; events: GameEvent[] };
 
 export async function getGameDetail(id: string): Promise<GameDetail | null> {

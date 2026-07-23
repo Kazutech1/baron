@@ -3,7 +3,7 @@
 // Inbound (long polling): /start, /orders, /stats commands + button callbacks.
 import { config } from "./config.ts";
 import { orders, orderStats, setOrderStatus, telegramChatId } from "./db.ts";
-import type { OrderDoc } from "./types.ts";
+import type { OrderDoc, PaymentStatus } from "./types.ts";
 
 const API = () => `https://api.telegram.org/bot${config.telegramToken}`;
 
@@ -43,6 +43,31 @@ const STATUS_ICON: Record<OrderDoc["status"], string> = {
   cancelled: "❌ CANCELLED",
 };
 
+const PAYMENT_ICON: Record<PaymentStatus, string> = {
+  unpaid: "⏳ UNPAID",
+  paid: "💰 PAID",
+  failed: "⚠️ PAYMENT FAILED",
+};
+
+/** Nigerian local (0xxx) or already-international number → digits-only international form for wa.me. */
+function normalizePhone(phone: string): string | null {
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("0")) return `234${digits.slice(1)}`;
+  return digits;
+}
+
+/** Click-to-chat link, pre-filled with a status message — free, no WhatsApp API needed. */
+function whatsAppLink(order: OrderDoc): string | null {
+  const phone = normalizePhone(order.phone);
+  if (!phone) return null;
+  const text =
+    order.status === "delivered"
+      ? `Hi! Your Baron order ${order._id} has been delivered ✅ Enjoy!`
+      : `Hi! This is Baron regarding your order ${order._id} (${naira(order.totalNgn)}).`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}
+
 export function orderMessage(order: OrderDoc): string {
   const lines = order.items
     .map((i) => `• ${i.qty}× ${esc(i.name)} — ${esc(i.gameName)} — ${naira(i.priceNgn * i.qty)}`)
@@ -60,19 +85,21 @@ export function orderMessage(order: OrderDoc): string {
     `💳 ${esc(order.method)}`,
     ``,
     STATUS_ICON[order.status],
+    PAYMENT_ICON[order.paymentStatus],
   ].join("\n");
 }
 
 function orderKeyboard(order: OrderDoc) {
-  if (order.status !== "pending") return { inline_keyboard: [] };
-  return {
-    inline_keyboard: [
-      [
-        { text: "✅ Mark delivered", callback_data: `d:${order._id}` },
-        { text: "❌ Cancel order", callback_data: `c:${order._id}` },
-      ],
-    ],
-  };
+  const rows: { text: string; callback_data?: string; url?: string }[][] = [];
+  if (order.status === "pending") {
+    rows.push([
+      { text: "✅ Mark delivered", callback_data: `d:${order._id}` },
+      { text: "❌ Cancel order", callback_data: `c:${order._id}` },
+    ]);
+  }
+  const wa = whatsAppLink(order);
+  if (wa) rows.push([{ text: "💬 Message customer on WhatsApp", url: wa }]);
+  return { inline_keyboard: rows };
 }
 
 /** Send the new-order notification; returns the Telegram message id. */

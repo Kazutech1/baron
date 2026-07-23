@@ -1,5 +1,6 @@
 // Client-side helper for the admin dashboard (talks to the Baron API with a bearer token).
 import { API_URL } from "./api";
+import { formatNaira } from "./catalog";
 
 const TOKEN_KEY = "baron-admin-token";
 
@@ -97,9 +98,22 @@ export type AdminOrder = {
   playerIds: Record<string, string>;
   totalNgn: number;
   status: "pending" | "delivered" | "cancelled";
+  paymentStatus: "unpaid" | "paid" | "failed";
   createdAt: string;
   items: { itemId: string; kind: string; gameId: string; gameName: string; name: string; priceNgn: number; qty: number }[];
 };
+
+/** Click-to-chat link, pre-filled with a status message — free, no WhatsApp API needed. */
+export function whatsAppLink(order: Pick<AdminOrder, "id" | "phone" | "totalNgn" | "status">): string | null {
+  const digits = order.phone.replace(/\D/g, "");
+  if (!digits) return null;
+  const phone = digits.startsWith("0") ? `234${digits.slice(1)}` : digits;
+  const text =
+    order.status === "delivered"
+      ? `Hi! Your Baron order ${order.id} has been delivered ✅ Enjoy!`
+      : `Hi! This is Baron regarding your order ${order.id} (${formatNaira(order.totalNgn)}).`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}
 
 export type Overview = {
   stats: { pending: number; todayCount: number; todayTotal: number; deliveredCount: number; deliveredTotal: number };
