@@ -1,7 +1,7 @@
 export const config = {
   port: Number(process.env.PORT || 4000),
   mongoUri: process.env.MONGODB_URI || "",
-  mongoDb: process.env.MONGODB_DB || "baron",
+  mongoDb: process.env.MONGODB_DB || "loadax",
   telegramToken: process.env.TELEGRAM_BOT_TOKEN || "",
   telegramChatId: process.env.TELEGRAM_CHAT_ID || "",
   adminPassword: process.env.ADMIN_PASSWORD || "",

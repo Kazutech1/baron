@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -5,7 +6,7 @@ export default function Footer() {
     <footer className="mt-20 border-t border-edge bg-night-900">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div>
-          <p className="font-display text-xl font-bold tracking-[0.3em] text-white">LOADAX</p>
+          <Image src="/logo-full.png" alt="Loadax" width={1288} height={535} className="h-16 w-auto" />
           <p className="mt-3 text-sm leading-6 text-slate-400">
             Nigeria&apos;s player-first store for game tokens, passes and skins.
             Instant delivery to your game ID — pay in Naira.

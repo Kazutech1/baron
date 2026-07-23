@@ -41,7 +41,7 @@ export default function AdminGamesPage() {
       <h1 className="font-display text-3xl font-bold uppercase text-white">Games</h1>
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
 
-      <form onSubmit={createGame} className="clip-card panel mt-6 flex items-end gap-3 p-4">
+      <form onSubmit={createGame} className="clip-card panel mt-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
         <label className="flex-1">
           <span className={cls.label}>New game name</span>
           <input

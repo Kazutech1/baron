@@ -86,7 +86,7 @@ export default function AdminEventsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-bold uppercase text-white">Events</h1>
         <button
           className={cls.btnSolid}
@@ -231,7 +231,7 @@ export default function AdminEventsPage() {
                     </p>
                   </div>
                   <StatusBadge status={e.status} />
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {e.status !== "live" && (
                       <button onClick={() => quickStatus(e, "live")} className={cls.btnSolid}>
                         Publish

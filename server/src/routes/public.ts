@@ -2,7 +2,7 @@ import { Router } from "express";
 import { config } from "../config.ts";
 import { events, games, orders, skins, createOrder, setOrderPaymentRef, updatePaymentStatus } from "../db.ts";
 import { initializeTransaction, verifyTransaction } from "../paystack.ts";
-import { notifyNewOrder, refreshOrderMessage } from "../telegram.ts";
+import { notifyNewOrder, notifyPaymentConfirmed, refreshOrderMessage } from "../telegram.ts";
 import { pub } from "../types.ts";
 
 export const publicRouter = Router();
@@ -151,8 +151,11 @@ publicRouter.get("/orders/:ref/verify", async (req, res) => {
     const result = await verifyTransaction(order.paymentRef);
     const paidOk = result.data.status === "success" && result.data.amount === Math.round(order.totalNgn * 100);
     if (paidOk) {
-      const updated = await updatePaymentStatus(order._id, "paid", order.paymentRef);
-      if (updated) refreshOrderMessage(updated).catch(() => {});
+      const { order: updated, changed } = await updatePaymentStatus(order._id, "paid", order.paymentRef);
+      if (updated) {
+        refreshOrderMessage(updated).catch(() => {});
+        if (changed) notifyPaymentConfirmed(updated).catch(() => {});
+      }
       res.json({ paymentStatus: "paid" });
       return;
     }

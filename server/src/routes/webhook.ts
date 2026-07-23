@@ -4,7 +4,7 @@
 import type { Request, Response } from "express";
 import { orders, updatePaymentStatus } from "../db.ts";
 import { verifyWebhookSignature } from "../paystack.ts";
-import { refreshOrderMessage } from "../telegram.ts";
+import { notifyPaymentConfirmed, refreshOrderMessage } from "../telegram.ts";
 
 type ChargeSuccessEvent = {
   event: string;
@@ -45,8 +45,11 @@ export async function paystackWebhook(req: Request, res: Response) {
       console.error(`[paystack] webhook amount mismatch for ${orderRef}`);
       return;
     }
-    const updated = await updatePaymentStatus(orderRef, "paid", event.data.reference);
-    if (updated) refreshOrderMessage(updated).catch(() => {});
+    const { order: updated, changed } = await updatePaymentStatus(orderRef, "paid", event.data.reference);
+    if (updated) {
+      refreshOrderMessage(updated).catch(() => {});
+      if (changed) notifyPaymentConfirmed(updated).catch(() => {});
+    }
   } catch (err) {
     console.error("[paystack] webhook handling error:", (err as Error).message);
   }

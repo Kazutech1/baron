@@ -110,7 +110,7 @@ export default function AdminSettingsPage() {
             </span>
           )}
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button onClick={save} className={cls.btnSolid}>
             Save settings
           </button>
@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
           />
           Publish detected events immediately (otherwise they land as drafts for review)
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button onClick={save} className={cls.btnSolid}>
             Save settings
           </button>

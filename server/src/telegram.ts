@@ -57,15 +57,41 @@ function normalizePhone(phone: string): string | null {
   return digits;
 }
 
+/** WhatsApp supports a light markdown subset: *bold*, _italic_, and real line breaks. */
+function whatsAppMessage(order: OrderDoc): string {
+  const ref = order._id;
+  const total = naira(order.totalNgn);
+
+  if (order.status === "delivered") {
+    return [
+      "✅ *Delivered!*",
+      "",
+      `Hey! Your Loadax order *${ref}* has landed — sent straight to your game ID.`,
+      "",
+      "Enjoy! 🎮🔥",
+    ].join("\n");
+  }
+  if (order.paymentStatus === "paid") {
+    return [
+      "💰 *Payment received!*",
+      "",
+      `Thanks for order *${ref}* — we've confirmed your payment of *${total}*.`,
+      "",
+      "Getting it ready now, delivery is on the way 🚀",
+    ].join("\n");
+  }
+  return [
+    "👋 Hey, this is *Loadax*!",
+    "",
+    `Reaching out about your order *${ref}* (*${total}*).`,
+  ].join("\n");
+}
+
 /** Click-to-chat link, pre-filled with a status message — free, no WhatsApp API needed. */
 function whatsAppLink(order: OrderDoc): string | null {
   const phone = normalizePhone(order.phone);
   if (!phone) return null;
-  const text =
-    order.status === "delivered"
-      ? `Hi! Your Baron order ${order._id} has been delivered ✅ Enjoy!`
-      : `Hi! This is Baron regarding your order ${order._id} (${naira(order.totalNgn)}).`;
-  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(whatsAppMessage(order))}`;
 }
 
 export function orderMessage(order: OrderDoc): string {
@@ -132,12 +158,31 @@ export async function refreshOrderMessage(order: OrderDoc): Promise<void> {
   });
 }
 
+/**
+ * Fresh push notification when a payment actually clears — distinct from `refreshOrderMessage`,
+ * which just silently edits the original order card (edits don't reliably re-alert on Telegram).
+ */
+export async function notifyPaymentConfirmed(order: OrderDoc): Promise<void> {
+  const chatId = await telegramChatId();
+  if (!chatId) return;
+  const wa = whatsAppLink(order);
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: [
+      `💰 <b>PAYMENT CONFIRMED</b> — ${naira(order.totalNgn)}`,
+      `Order <b>${esc(order._id)}</b> just paid via Paystack. Ready to deliver.`,
+    ].join("\n"),
+    parse_mode: "HTML",
+    reply_markup: wa ? { inline_keyboard: [[{ text: "💬 Message customer on WhatsApp", url: wa }]] } : undefined,
+  });
+}
+
 export async function sendTestMessage(): Promise<boolean> {
   const chatId = await telegramChatId();
   if (!chatId) return false;
   const res = await tg("sendMessage", {
     chat_id: chatId,
-    text: "⚡ Baron test — the bot is wired up correctly.",
+    text: "⚡ Loadax test — the bot is wired up correctly.",
   });
   return res !== null;
 }
@@ -169,7 +214,7 @@ async function handleCommand(chatId: number, text: string) {
       chat_id: chatId,
       parse_mode: "HTML",
       text: [
-        `👑 <b>Baron bot</b>`,
+        `👑 <b>Loadax bot</b>`,
         ``,
         `Your chat id: <code>${chatId}</code>`,
         configured
@@ -205,7 +250,7 @@ async function handleCommand(chatId: number, text: string) {
       chat_id: chatId,
       parse_mode: "HTML",
       text: [
-        `📊 <b>Baron stats</b>`,
+        `📊 <b>Loadax stats</b>`,
         `Pending: <b>${s.pending}</b>`,
         `Today: <b>${s.todayCount}</b> orders — ${naira(s.todayTotal)}`,
         `Delivered all-time: <b>${s.deliveredCount}</b> — ${naira(s.deliveredTotal)}`,

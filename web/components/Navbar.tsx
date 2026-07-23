@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
@@ -10,21 +11,6 @@ const LINKS = [
   { href: "/skins", label: "Skins" },
 ];
 
-export function LoadaxMark({ className = "h-7 w-7" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 64 64" className={className} aria-hidden>
-      <path
-        d="M12 44 L12 24 L22 33 L32 18 L42 33 L52 24 L52 44 Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="4"
-        strokeLinejoin="round"
-      />
-      <rect x="12" y="48" width="40" height="4" fill="currentColor" />
-    </svg>
-  );
-}
-
 export default function Navbar() {
   const { count } = useCart();
   const pathname = usePathname();
@@ -32,8 +18,8 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-edge bg-night-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-neon sm:gap-2.5">
-          <LoadaxMark className="h-6 w-6 sm:h-7 sm:w-7" />
+        <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+          <Image src="/logo-mark.png" alt="" width={184} height={248} priority className="h-7 w-auto sm:h-8" />
           <span className="font-display text-lg font-bold tracking-[0.2em] text-white sm:text-2xl sm:tracking-[0.3em]">
             LOADAX
           </span>

@@ -5,7 +5,7 @@ import { config } from "./config.ts";
 const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function secret(): Buffer {
-  return createHmac("sha256", "baron-admin-v1").update(config.adminPassword).digest();
+  return createHmac("sha256", "loadax-admin-v1").update(config.adminPassword).digest();
 }
 
 function sign(payload: string): string {

@@ -70,7 +70,7 @@ export default function AdminSkinsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-bold uppercase text-white">Skins</h1>
         <button className={cls.btnSolid} onClick={() => setEditing({ ...EMPTY, gameId: games[0]?.id ?? "" })}>
           + New skin

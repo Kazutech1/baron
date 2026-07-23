@@ -183,14 +183,16 @@ export async function setOrderPaymentRef(ref: string, paymentRef: string): Promi
 /**
  * Idempotent: the `paymentStatus: { $ne: "paid" }` guard means a late/duplicate "failed"
  * verify can never downgrade an order the webhook already marked paid, and marking paid
- * twice (webhook + return-page verify racing) is a no-op the second time.
+ * twice (webhook + return-page verify racing) is a no-op the second time. `changed` tells
+ * the caller whether *this* call was the one that actually flipped it — so only one of the
+ * two racing confirmation paths sends a "payment confirmed" alert, not both.
  */
 export async function updatePaymentStatus(
   ref: string,
   status: "paid" | "failed",
   paymentRef: string
-): Promise<OrderDoc | null> {
-  await orders().updateOne(
+): Promise<{ order: OrderDoc | null; changed: boolean }> {
+  const result = await orders().updateOne(
     { _id: ref, paymentStatus: { $ne: "paid" } },
     {
       $set: {
@@ -201,7 +203,8 @@ export async function updatePaymentStatus(
       },
     }
   );
-  return orders().findOne({ _id: ref });
+  const order = await orders().findOne({ _id: ref });
+  return { order, changed: result.matchedCount > 0 };
 }
 
 export async function orderStats() {

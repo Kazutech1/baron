@@ -58,7 +58,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 app.listen(config.port, () => {
-  console.log(`[http] Baron API on http://localhost:${config.port}`);
+  console.log(`[http] Loadax API on http://localhost:${config.port}`);
 });
 
 startBot();
